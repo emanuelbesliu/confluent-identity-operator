@@ -1,0 +1,105 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "confluent-identity-operator.fullname" . }}-manager
+  labels:
+    {{- include "confluent-identity-operator.labels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - confluentoauth.io
+    resources:
+      - confluentidentitypools
+      - confluentrolebindings
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - confluentoauth.io
+    resources:
+      - confluentidentitypools/status
+      - confluentrolebindings/status
+    verbs:
+      - get
+      - update
+      - patch
+  - apiGroups:
+      - confluentoauth.io
+    resources:
+      - confluentidentitypools/finalizers
+      - confluentrolebindings/finalizers
+    verbs:
+      - update
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "confluent-identity-operator.fullname" . }}-manager
+  labels:
+    {{- include "confluent-identity-operator.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "confluent-identity-operator.fullname" . }}-manager
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "confluent-identity-operator.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- if .Values.leaderElection }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "confluent-identity-operator.fullname" . }}-leader-election
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "confluent-identity-operator.labels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "confluent-identity-operator.fullname" . }}-leader-election
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "confluent-identity-operator.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "confluent-identity-operator.fullname" . }}-leader-election
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "confluent-identity-operator.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}

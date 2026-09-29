@@ -1,0 +1,43 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+          cache: true
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test
+        run: go test ./... -race
+
+      - name: Build
+        run: go build ./...
+
+      - name: Docker build
+        run: docker build -t confluent-identity-operator:ci .
+
+  helm-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      - name: Helm lint
+        run: |
+          helm lint charts/confluent-identity-operator \
+            --set clusterName=ci \
+            --set confluent.identityProviderId=op-x \
+            --set image.repository=example/confluent-identity-operator \
+            --set confluent.credentials.existingSecret=s

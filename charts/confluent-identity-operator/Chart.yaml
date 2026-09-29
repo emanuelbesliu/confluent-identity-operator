@@ -1,0 +1,13 @@
+apiVersion: v2
+name: confluent-identity-operator
+description: Kubernetes operator that auto-provisions Confluent Cloud workload identity (identity pools + role bindings) for AKS workloads authenticating via Entra ID federated UAMIs.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - confluent
+  - kafka
+  - workload-identity
+  - entra-id
+  - operator
+  - oauth

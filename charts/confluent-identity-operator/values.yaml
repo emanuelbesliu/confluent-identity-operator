@@ -1,0 +1,85 @@
+# -- Container image configuration
+image:
+  repository: "" # e.g. myregistry.azurecr.io/confluent-identity-operator
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+
+# -- Image pull secrets for private registries
+imagePullSecrets: []
+# - name: acr-pull-secret
+
+# -- Number of operator replicas. Leader election ensures only one is active.
+replicaCount: 1
+
+# -- Cluster identity. REQUIRED. Feeds deterministic pool naming <cluster>-<ns>-<app>
+# and ownership scoping. Each per-cluster operator sets its own value.
+clusterName: ""
+
+# -- Confluent Cloud connection and trust-layer settings.
+confluent:
+  # -- Confluent Cloud REST API base URL.
+  apiBase: "https://api.confluent.cloud"
+  # -- Confluent identity provider id (op-xxxx) all pools belong to. REQUIRED.
+  # One per Entra tenant/env (trust-layer Terraform output).
+  identityProviderId: ""
+  # -- Default audience app-registration client-id pinned as claims.aud when a
+  # ConfluentIdentityPool omits spec.audience.
+  audience: ""
+  # -- Optional CRN scope to narrow role-binding lookups. May be empty.
+  crnScope: ""
+  # -- Confluent Cloud API key/secret (org-scoped credential for pool + role-binding CRUD).
+  # Prefer an existingSecret (e.g. synced from your secret manager) over inline values.
+  credentials:
+    # -- Reference an existing secret holding the CC API key/secret.
+    existingSecret: ""
+    apiKeyKey: "apiKey"
+    apiSecretKey: "apiSecret"
+    # -- Inline values (dev/PoC only; leave empty in real envs and use existingSecret).
+    apiKey: ""
+    apiSecret: ""
+
+# -- Enable leader election (recommended when replicaCount > 1).
+leaderElection: true
+
+# -- Safety gates (recommended when testing against a real Confluent org).
+safety:
+  # -- Dry run: every mutating Confluent Cloud call becomes a logged no-op.
+  dryRun: false
+  # -- Owned prefix: the operator only creates/patches/deletes pools whose
+  # display name starts with this prefix. Empty = no restriction.
+  ownedPrefix: ""
+
+# -- Azure Workload Identity for the operator's own cluster-local needs.
+workloadIdentity:
+  enabled: false
+  clientId: ""
+
+# -- Service account configuration.
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+# -- Log level (debug, info, error).
+logLevel: "info"
+
+# -- Resource requests and limits.
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+
+# -- Node selector
+nodeSelector: {}
+
+# -- Tolerations
+tolerations: []
+
+# -- Pod annotations
+podAnnotations: {}
+
+# -- Pod labels
+podLabels: {}

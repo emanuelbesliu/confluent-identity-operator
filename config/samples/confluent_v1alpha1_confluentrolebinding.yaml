@@ -1,0 +1,15 @@
+apiVersion: confluentoauth.io/v1alpha1
+kind: ConfluentRoleBinding
+metadata:
+  name: orders-service-read
+  namespace: orders
+spec:
+  # Bind to the principal of the orders-service identity pool
+  # (resolved to User:<pool.status.poolId>).
+  poolRef:
+    name: orders-service
+  bindings:
+    - roleName: DeveloperRead
+      crnPattern: "crn://confluent.cloud/organization=*/environment=*/cloud-cluster=*/kafka=*/topic=orders-*"
+    - roleName: DeveloperRead
+      crnPattern: "crn://confluent.cloud/organization=*/environment=*/cloud-cluster=*/kafka=*/group=orders-service-*"

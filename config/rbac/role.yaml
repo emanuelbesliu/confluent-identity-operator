@@ -1,0 +1,43 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: manager-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - confluentoauth.io
+  resources:
+  - confluentidentitypools
+  - confluentrolebindings
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - confluentoauth.io
+  resources:
+  - confluentidentitypools/finalizers
+  - confluentrolebindings/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - confluentoauth.io
+  resources:
+  - confluentidentitypools/status
+  - confluentrolebindings/status
+  verbs:
+  - get
+  - patch
+  - update

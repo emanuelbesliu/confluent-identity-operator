@@ -1,0 +1,15 @@
+# Test-only mock Confluent Cloud API used by the e2e suite.
+FROM golang:1.26 AS builder
+ARG GOPROXY=https://proxy.golang.org,direct
+ENV GOPROXY=${GOPROXY}
+WORKDIR /workspace
+COPY go.mod go.sum ./
+RUN go mod download
+COPY test/mockcc/ test/mockcc/
+RUN CGO_ENABLED=0 GOOS=linux go build -a -o mockcc ./test/mockcc
+
+FROM gcr.io/distroless/static:nonroot
+WORKDIR /
+COPY --from=builder /workspace/mockcc .
+USER 65532:65532
+ENTRYPOINT ["/mockcc"]

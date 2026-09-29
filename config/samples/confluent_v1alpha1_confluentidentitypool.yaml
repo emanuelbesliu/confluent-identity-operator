@@ -1,0 +1,17 @@
+apiVersion: confluentoauth.io/v1alpha1
+kind: ConfluentIdentityPool
+metadata:
+  name: orders-service
+  namespace: orders
+spec:
+  # Reads the UAMI clientId (azp) and principalId (oid) exported by ASO into
+  # this ConfigMap (same idiom as the ASO RoleAssignment principalIdFromConfig).
+  identityConfigRef:
+    name: orders-service-identity-config
+    clientIdKey: clientId
+    principalIdKey: principalId
+  # Shared audience app-registration client-id (trust-layer output).
+  audience: "11111111-2222-3333-4444-555555555555"
+  # Deterministic <cluster>-<ns>-<app>.
+  displayName: "aks-np-nonpci-ops-uks-orders-orders-service"
+  description: "Identity pool for the orders-service workload"

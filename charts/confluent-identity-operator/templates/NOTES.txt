@@ -1,0 +1,25 @@
+confluent-identity-operator installed in namespace {{ .Release.Namespace }}.
+
+Operator instance for cluster: {{ .Values.clusterName }}
+Confluent identity provider: {{ .Values.confluent.identityProviderId }}
+
+Verify the operator is running:
+  kubectl -n {{ .Release.Namespace }} get deploy {{ include "confluent-identity-operator.fullname" . }}
+  kubectl -n {{ .Release.Namespace }} logs deploy/{{ include "confluent-identity-operator.fullname" . }}
+
+CRDs installed:
+  - confluentidentitypools.confluentoauth.io   (authentication)
+  - confluentrolebindings.confluentoauth.io    (authorization)
+
+A workload's app chart renders a ConfluentIdentityPool CR; this operator creates
+the matching Confluent Cloud identity pool (authN only, zero role bindings).
+Grant access by adding a ConfluentRoleBinding via the GitOps permission repo —
+the PR review is the approval gate.
+{{- if not .Values.confluent.credentials.existingSecret }}
+{{- if not (or .Values.confluent.credentials.apiKey .Values.confluent.credentials.apiSecret) }}
+
+WARNING: no Confluent credentials configured. Set either
+  confluent.credentials.existingSecret (recommended, from your secret manager) or
+  confluent.credentials.apiKey/apiSecret (dev/PoC only).
+{{- end }}
+{{- end }}
