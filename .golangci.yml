@@ -1,0 +1,21 @@
+run:
+  timeout: 5m
+
+linters:
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - misspell
+    - unconvert
+    - gofmt
+    - goimports
+
+issues:
+  exclude-rules:
+    # Test-only mock server keeps things intentionally simple.
+    - path: test/mockcc/
+      linters:
+        - errcheck

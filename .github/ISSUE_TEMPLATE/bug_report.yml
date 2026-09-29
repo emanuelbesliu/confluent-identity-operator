@@ -1,0 +1,56 @@
+name: Bug report
+description: Report a problem with the operator
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug! Please do **not** include secrets (Confluent
+        Cloud API keys/secrets, tokens) in logs you paste here.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps, CRs and Helm values to reproduce.
+      placeholder: |
+        1. Install the chart with ...
+        2. Apply this ConfluentIdentityPool ...
+        3. See error ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Operator logs
+      description: Relevant operator logs (redact any credentials).
+      render: shell
+  - type: input
+    id: operator-version
+    attributes:
+      label: Operator / chart version
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: input
+    id: k8s-version
+    attributes:
+      label: Kubernetes version
+      placeholder: "v1.30"
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Confirmations
+      options:
+        - label: I have removed all secrets/credentials from the details above.
+          required: true
+        - label: I searched existing issues and this is not a duplicate.
+          required: true

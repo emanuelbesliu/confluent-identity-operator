@@ -1,5 +1,12 @@
 # confluent-identity-operator
 
+[![ci](https://github.com/emanuelbesliu/confluent-identity-operator/actions/workflows/ci.yml/badge.svg)](https://github.com/emanuelbesliu/confluent-identity-operator/actions/workflows/ci.yml)
+[![codeql](https://github.com/emanuelbesliu/confluent-identity-operator/actions/workflows/codeql.yml/badge.svg)](https://github.com/emanuelbesliu/confluent-identity-operator/actions/workflows/codeql.yml)
+[![release](https://img.shields.io/github/v/release/emanuelbesliu/confluent-identity-operator?sort=semver)](https://github.com/emanuelbesliu/confluent-identity-operator/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![Go Report Card](https://goreportcard.com/badge/github.com/emanuelbesliu/confluent-identity-operator)](https://goreportcard.com/report/github.com/emanuelbesliu/confluent-identity-operator)
+
+
 A Kubernetes operator that auto-provisions **Confluent Cloud workload identity**
 for workloads that authenticate to Confluent Cloud via **OAuth/OIDC**
 (SASL_SSL / OAUTHBEARER) — replacing static, long-lived API keys with federated
@@ -130,6 +137,18 @@ The mock Confluent Cloud API (`test/mockcc`) is an in-memory reimplementation of
 just the IAM v2 identity-pool and role-binding endpoints the operator calls, so
 the e2e path exercises the real controller reconcile loop without any external
 account or credentials.
+
+## Contributing
+
+Contributions are welcome! Please read [CONTRIBUTING.md](./CONTRIBUTING.md) and
+the [Code of Conduct](./CODE_OF_CONDUCT.md). See [CHANGELOG.md](./CHANGELOG.md)
+for release history.
+
+## Security
+
+Please report vulnerabilities privately — see [SECURITY.md](./SECURITY.md). Do
+not open public issues for security reports. Dependencies are monitored by
+Dependabot and scanned with `govulncheck` and CodeQL in CI.
 
 ## License
 

@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  GO_VERSION: "1.26.6"
+
 jobs:
   # Phase 1 — unit: static checks, race-enabled unit tests and a compile.
   # Touches no external service (no Confluent Cloud org).
@@ -16,7 +19,7 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.26"
+          go-version: ${{ env.GO_VERSION }}
           cache: true
 
       - name: Vet
@@ -31,7 +34,41 @@ jobs:
       - name: Docker build
         run: docker build -t confluent-identity-operator:ci .
 
-  # Phase 2 — helm-lint: validate the chart renders with required values.
+  # Phase 2 — lint: formatting and module hygiene.
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+      - name: gofmt
+        run: |
+          out="$(gofmt -l .)"
+          if [ -n "$out" ]; then
+            echo "These files are not gofmt-ed:"; echo "$out"; exit 1
+          fi
+      - name: go mod tidy is clean
+        run: |
+          go mod tidy
+          git diff --exit-code go.mod go.sum
+
+  # Phase 3 — vuln: scan code + dependencies for known vulnerabilities.
+  govulncheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+      - name: govulncheck
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./...
+
+  # Phase 4 — helm-lint: validate the chart renders with required values.
   helm-lint:
     runs-on: ubuntu-latest
     steps:
@@ -45,12 +82,12 @@ jobs:
             --set image.repository=example/confluent-identity-operator \
             --set confluent.credentials.existingSecret=s
 
-  # Phase 3 — e2e: spin up a kind cluster and an in-cluster MOCK Confluent Cloud
+  # Phase 5 — e2e: spin up a kind cluster and an in-cluster MOCK Confluent Cloud
   # API, install the operator, apply sample CRs and assert a pool + role binding
   # are created. No real Confluent Cloud org is contacted.
   e2e:
     runs-on: ubuntu-latest
-    needs: [unit, helm-lint]
+    needs: [unit, lint, helm-lint]
     steps:
       - uses: actions/checkout@v4
 
