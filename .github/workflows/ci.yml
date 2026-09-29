@@ -7,7 +7,9 @@ on:
     branches: [main]
 
 jobs:
-  build-test:
+  # Phase 1 — unit: static checks, race-enabled unit tests and a compile.
+  # Touches no external service (no Confluent Cloud org).
+  unit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,6 +31,7 @@ jobs:
       - name: Docker build
         run: docker build -t confluent-identity-operator:ci .
 
+  # Phase 2 — helm-lint: validate the chart renders with required values.
   helm-lint:
     runs-on: ubuntu-latest
     steps:
@@ -41,3 +44,23 @@ jobs:
             --set confluent.identityProviderId=op-x \
             --set image.repository=example/confluent-identity-operator \
             --set confluent.credentials.existingSecret=s
+
+  # Phase 3 — e2e: spin up a kind cluster and an in-cluster MOCK Confluent Cloud
+  # API, install the operator, apply sample CRs and assert a pool + role binding
+  # are created. No real Confluent Cloud org is contacted.
+  e2e:
+    runs-on: ubuntu-latest
+    needs: [unit, helm-lint]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/setup-helm@v4
+
+      - name: Install kind
+        run: |
+          curl -fsSLo ./kind https://kind.sigs.k8s.io/dl/v0.24.0/kind-linux-amd64
+          chmod +x ./kind
+          sudo mv ./kind /usr/local/bin/kind
+
+      - name: Run e2e (kind + mock Confluent Cloud)
+        run: bash test/e2e/run.sh

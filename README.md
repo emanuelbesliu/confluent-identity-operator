@@ -114,12 +114,22 @@ When testing against a real Confluent Cloud org, set:
 - `safety.ownedPrefix=<prefix>` / `OWNED_PREFIX=<prefix>` — restrict the operator
   to pools it owns, so it never touches pools created by other tools.
 
-## End-to-end test
+## Testing
 
-`test/e2e/run.sh` spins up a `kind` cluster and an in-cluster **mock Confluent
-Cloud API** (no real org is touched), installs the operator, applies sample CRs,
-and asserts a pool and role binding were created. Requires `docker`, `kind`,
-`kubectl`, and `helm`.
+Every test phase runs against local tooling only — **no real Confluent Cloud
+organization is contacted at any point**. All three phases run in CI on every
+push and pull request (see `.github/workflows/ci.yml`).
+
+| Phase | Command | What it does | External deps |
+|-------|---------|--------------|---------------|
+| Unit | `make test` (`go test ./... -race`) | Static analysis (`go vet`), race-enabled unit tests and a compile. | none |
+| Chart lint | `make helm-lint` | Renders the Helm chart with required values. | none |
+| End-to-end | `test/e2e/run.sh` | Spins up a `kind` cluster and an in-cluster **mock Confluent Cloud API**, installs the operator, applies sample CRs and asserts a pool + role binding were created. | `docker`, `kind`, `kubectl`, `helm` |
+
+The mock Confluent Cloud API (`test/mockcc`) is an in-memory reimplementation of
+just the IAM v2 identity-pool and role-binding endpoints the operator calls, so
+the e2e path exercises the real controller reconcile loop without any external
+account or credentials.
 
 ## License
 

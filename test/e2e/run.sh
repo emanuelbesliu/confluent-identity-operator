@@ -71,14 +71,25 @@ spec:
       crnPattern: "crn://confluent.cloud/kafka=lkc-xxx/topic=orders-*"
 EOF
 
-sleep 8
 echo "==> Assert pool + binding exist in mock CC"
 kubectl --context "$CTX" -n "$NS" port-forward svc/mockcc 18080:80 >/tmp/cio-pf.log 2>&1 &
 PF_PID=$!
+trap 'kill "$PF_PID" 2>/dev/null || true' EXIT
 sleep 3
-STATE=$(curl -s http://localhost:18080/_debug/state)
+
+# The role-binding controller requeues after 30s while it waits for the pool's
+# status.poolId to be populated, so poll (up to ~2min) instead of assuming a
+# fixed delay.
+STATE=""
+for i in $(seq 1 40); do
+  STATE=$(curl -s http://localhost:18080/_debug/state)
+  if echo "$STATE" | python3 -c 'import sys,json; d=json.load(sys.stdin); sys.exit(0 if len(d["pools"])==1 and len(d["roleBindings"])==1 else 1)' 2>/dev/null; then
+    break
+  fi
+  sleep 3
+done
+
 echo "$STATE" | python3 -m json.tool
 echo "$STATE" | python3 -c 'import sys,json; d=json.load(sys.stdin); assert len(d["pools"])==1, "expected 1 pool"; assert len(d["roleBindings"])==1, "expected 1 binding"; print("ASSERT OK: 1 pool, 1 role binding")'
-kill "$PF_PID"
 
 echo "==> E2E PASSED"
