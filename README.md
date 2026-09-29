@@ -55,6 +55,23 @@ make test                 # go test ./...
 make docker-build IMG=<registry>/confluent-identity-operator:0.1.0
 ```
 
+## Container image
+
+Released multi-arch images (`linux/amd64`, `linux/arm64`) are published to GitHub
+Container Registry on every `v*` tag:
+
+```
+ghcr.io/emanuelbesliu/confluent-identity-operator:<version>   # e.g. 0.1.0
+ghcr.io/emanuelbesliu/confluent-identity-operator:latest
+```
+
+The Helm chart is also pushed as an OCI artifact:
+
+```sh
+helm install cio oci://ghcr.io/emanuelbesliu/charts/confluent-identity-operator \
+  --version 0.1.0 ...
+```
+
 ## Deploy (per cluster)
 
 ```sh
@@ -63,7 +80,7 @@ helm install cio charts/confluent-identity-operator \
   --set clusterName=<cluster-name> \
   --set confluent.identityProviderId=op-xxxx \
   --set confluent.audience=<audience-client-id> \
-  --set image.repository=<registry>/confluent-identity-operator \
+  --set image.repository=ghcr.io/emanuelbesliu/confluent-identity-operator \
   --set confluent.credentials.existingSecret=cc-operator-creds
 ```
 
